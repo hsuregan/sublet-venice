@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend;
+function getResend() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 const from = process.env.EMAIL_FROM || "bookings@yourdomain.com";
 
 export async function sendNewBookingNotification(booking: {
@@ -16,7 +22,7 @@ export async function sendNewBookingNotification(booking: {
   if (!adminEmail) return;
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from,
       to: adminEmail,
       subject: `New Booking Request from ${booking.guest_name}`,
@@ -46,7 +52,7 @@ export async function sendBookingApproval(booking: {
   total_price: number;
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from,
       to: booking.guest_email,
       subject: "Your Venice Booking is Confirmed!",
@@ -69,7 +75,7 @@ export async function sendBookingApproval(booking: {
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from,
       to: email,
       subject: "Password Reset Request",
@@ -93,7 +99,7 @@ export async function sendBookingCancellation(booking: {
   check_out: string;
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from,
       to: booking.guest_email,
       subject: "Your Venice Booking Has Been Cancelled",
@@ -118,7 +124,7 @@ export async function sendBookingDenial(booking: {
   check_out: string;
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from,
       to: booking.guest_email,
       subject: "Update on Your Venice Booking Request",
