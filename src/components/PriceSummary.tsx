@@ -15,6 +15,8 @@ export default function PriceSummary({
   dailyRate,
   priceOverrides,
 }: PriceSummaryProps) {
+  const [expanded, setExpanded] = useState(false);
+
   if (!selectedRange.from || !selectedRange.to) return null;
 
   const overrideMap = new Map(
@@ -35,8 +37,6 @@ export default function PriceSummary({
   });
 
   const total = breakdown.reduce((sum, b) => sum + b.price, 0);
-
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="bg-stone-100 rounded-lg p-4 border border-stone-200">
