@@ -40,24 +40,23 @@ export default function PhotoDialog({ open, onClose }: PhotoDialogProps) {
     <>
       {/* All Photos Dialog */}
       <div
-        className="fixed inset-0 bg-black/80 z-50 overflow-y-auto"
+        className="fixed inset-0 bg-black/80 z-50 overflow-y-auto overflow-x-hidden w-screen"
         onClick={onClose}
       >
+        <button
+          onClick={onClose}
+          className="fixed top-4 right-4 z-[55] text-white hover:text-stone-300 bg-black/60 hover:bg-black/80 w-10 h-10 rounded-full flex items-center justify-center text-2xl leading-none transition-colors"
+        >
+          &times;
+        </button>
         <div
-          className="max-w-5xl mx-auto px-4 py-12"
+          className="max-w-5xl mx-auto px-4 py-12 box-border"
+          style={{ width: "100%" , maxWidth: "min(64rem, 100vw)" }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-white text-2xl font-bold">
-              All Photos ({photos.length})
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-stone-300 text-3xl leading-none"
-            >
-              &times;
-            </button>
-          </div>
+          <h3 className="text-white text-xl sm:text-2xl font-bold mb-6">
+            All Photos ({photos.length})
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {photos.map((photo, index) => (
               <button
@@ -113,7 +112,7 @@ export default function PhotoDialog({ open, onClose }: PhotoDialogProps) {
             &rsaquo;
           </button>
           <div
-            className="relative w-full max-w-4xl h-[80vh]"
+            className="relative w-full max-w-4xl h-[80vh] mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <Image

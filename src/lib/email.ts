@@ -33,7 +33,7 @@ export async function sendNewBookingNotification(booking: {
         <p><strong>Phone:</strong> ${booking.guest_phone}</p>
         <p><strong>Check-in:</strong> ${booking.check_in}</p>
         <p><strong>Check-out:</strong> ${booking.check_out}</p>
-        <p><strong>Total:</strong> €${booking.total_price.toFixed(2)}</p>
+        <p><strong>Total:</strong> $${booking.total_price.toFixed(2)}</p>
         <p><strong>Introduction:</strong> ${booking.introduction}</p>
         <br/>
         <p>Log in to the admin panel to approve or deny this request.</p>
@@ -62,7 +62,7 @@ export async function sendBookingApproval(booking: {
         <p>Great news! Your booking has been approved.</p>
         <p><strong>Check-in:</strong> ${booking.check_in}</p>
         <p><strong>Check-out:</strong> ${booking.check_out}</p>
-        <p><strong>Total:</strong> €${booking.total_price.toFixed(2)}</p>
+        <p><strong>Total:</strong> $${booking.total_price.toFixed(2)}</p>
         <br/>
         <p>We will follow up with check-in instructions closer to your arrival date.</p>
         <p>Thank you for choosing to stay with us in Venice!</p>

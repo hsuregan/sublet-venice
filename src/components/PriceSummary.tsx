@@ -45,7 +45,7 @@ export default function PriceSummary({
         <span>
           Total ({breakdown.length} night{breakdown.length !== 1 ? "s" : ""})
         </span>
-        <span>&euro;{total.toFixed(2)}</span>
+        <span>${total.toFixed(2)}</span>
       </div>
       <button
         type="button"
@@ -67,7 +67,7 @@ export default function PriceSummary({
           {breakdown.map((b) => (
             <div key={b.date} className="flex justify-between text-sm">
               <span className="text-stone-500">{b.date}</span>
-              <span className="text-stone-800">&euro;{b.price.toFixed(2)}</span>
+              <span className="text-stone-800">${b.price.toFixed(2)}</span>
             </div>
           ))}
         </div>

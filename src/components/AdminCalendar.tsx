@@ -103,9 +103,9 @@ export default function AdminCalendar({
         {isBooked ? (
           <span className="text-[9px] font-medium">Booked</span>
         ) : !available ? (
-          <span className="text-[9px] text-gray-400">N/A</span>
+          <span className="text-[9px] text-stone-400">N/A</span>
         ) : (
-          <span className="text-[9px] text-gray-500">&euro;{price}</span>
+          <span className="text-[9px] text-stone-500">${price}</span>
         )}
       </div>
     );
@@ -126,10 +126,10 @@ export default function AdminCalendar({
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold mb-4 text-gray-900">
+      <h2 className="text-lg font-semibold mb-4 text-stone-800">
         Pricing Calendar
       </h2>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-stone-500 mb-4">
         Click a date to set a custom price. Booked dates are shown in red.
       </p>
 
@@ -148,7 +148,7 @@ export default function AdminCalendar({
           }}
           modifiersClassNames={{
             booked: "!bg-red-100 !text-red-800",
-            override: "!bg-blue-50 !text-blue-900",
+            override: "!bg-amber-50 !text-amber-900",
             unavailable: "!opacity-40",
           }}
           components={{
@@ -158,37 +158,37 @@ export default function AdminCalendar({
             months: "flex flex-wrap justify-center gap-6",
             month: "space-y-4",
             caption:
-              "flex justify-center pt-1 relative items-center text-gray-900",
+              "flex justify-center pt-1 relative items-center text-stone-800",
             caption_label: "text-sm font-medium",
             nav: "space-x-1 flex items-center",
             nav_button:
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center",
-            nav_button_previous: "absolute left-1",
-            nav_button_next: "absolute right-1",
+              "h-9 w-9 p-0 bg-stone-700 hover:bg-stone-800 text-white rounded-full inline-flex items-center justify-center transition-colors",
+            nav_button_previous: "!absolute left-2 top-1/2 -translate-y-1/2",
+            nav_button_next: "!absolute right-2 top-1/2 -translate-y-1/2",
             table: "w-full border-collapse space-y-1",
             head_row: "flex",
             head_cell:
-              "text-gray-500 rounded-md w-10 font-normal text-[0.8rem]",
+              "text-stone-500 rounded-md w-10 font-normal text-[0.8rem]",
             row: "flex w-full mt-2",
             cell: "text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-            day: "h-12 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-gray-100 rounded-md inline-flex items-center justify-center cursor-pointer",
+            day: "h-12 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-stone-200 rounded-full inline-flex items-center justify-center cursor-pointer",
             day_selected:
-              "bg-blue-600 text-white hover:bg-blue-700 focus:bg-blue-700",
-            day_today: "border-2 border-blue-400 font-semibold",
-            day_outside: "text-gray-400 opacity-50",
+              "!bg-amber-700 !text-white hover:!bg-amber-800 focus:!bg-amber-800",
+            day_today: "bg-stone-200 font-semibold",
+            day_outside: "text-stone-400 opacity-50",
             day_hidden: "invisible",
           }}
         />
       </div>
 
       {selectedDate && (
-        <div className="mt-6 border-t pt-4">
+        <div className="mt-6 border-t border-stone-200 pt-4">
           <div className="flex items-end gap-3">
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-sm text-stone-700 mb-1">
                 Selected Date
               </label>
-              <p className="px-3 py-2 bg-gray-50 rounded-md text-sm text-gray-900 font-medium">
+              <p className="px-3 py-2 bg-stone-50 rounded-md text-sm text-stone-900 font-medium">
                 {format(selectedDate, "MMM d, yyyy")}
               </p>
             </div>
@@ -197,20 +197,20 @@ export default function AdminCalendar({
                 This date is booked and cannot have its price changed.
               </p>
             ) : isSelectedUnavailable ? (
-              <p className="text-sm text-gray-500 font-medium py-2">
+              <p className="text-sm text-stone-500 font-medium py-2">
                 This date is outside the bookable date ranges.
               </p>
             ) : (
               <>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Price (&euro;)
+                  <label className="block text-sm text-stone-700 mb-1">
+                    Price ($)
                   </label>
                   <input
                     type="number"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value)}
-                    className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                    className="w-28 px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600 text-stone-900"
                     min="0"
                     step="1"
                   />
@@ -218,7 +218,7 @@ export default function AdminCalendar({
                 <button
                   onClick={handleSetPrice}
                   disabled={saving}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  className="bg-amber-700 text-white px-4 py-2 rounded-md hover:bg-amber-800 disabled:opacity-50 transition-colors"
                 >
                   {saving ? "Saving..." : "Set Price"}
                 </button>
@@ -226,7 +226,7 @@ export default function AdminCalendar({
                   <button
                     onClick={handleResetToDefault}
                     disabled={saving}
-                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                    className="bg-stone-200 text-stone-700 px-4 py-2 rounded-md hover:bg-stone-300 disabled:opacity-50 transition-colors"
                   >
                     Reset to Default
                   </button>

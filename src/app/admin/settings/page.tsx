@@ -126,7 +126,7 @@ export default function AdminSettingsPage() {
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4 text-gray-900">Default Daily Rate</h2>
         <div className="flex items-center gap-3">
-          <span className="text-gray-500">&euro;</span>
+          <span className="text-gray-500">$</span>
           <input
             type="number"
             value={dailyRate}

@@ -99,7 +99,7 @@ export default function AdminDashboard() {
                     {booking.check_in} &rarr; {booking.check_out}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
-                    &euro;{booking.total_price.toFixed(2)}
+                    ${booking.total_price.toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
                     <span

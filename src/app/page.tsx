@@ -17,24 +17,54 @@ interface AvailabilityData {
   priceOverrides: { date: string; price: number }[];
 }
 
-const amenities = [
-  "Fully equipped kitchen",
-  "High-speed WiFi",
-  "Air conditioning",
-  "Washing machine",
-  "Linens & towels provided",
-  "Hair dryer",
-  "Iron & ironing board",
-  "Flat-screen TV",
-  "Coffee maker",
-  "Private patio with couch",
-  "Community BBQ",
-  "Community pool",
-  "Apartment gym (steps away)",
-  "Drying machine",
-  "Self-watering houseplants",
-  "Keyless entry",
-  "Central Venice location",
+const amenityCategories = [
+  {
+    title: "Kitchen & Dining",
+    items: [
+      { name: "Fully equipped kitchen", icon: "M3 3h18v6H3V3zm0 8h18v10H3V11zm4 3h2v4H7v-4z" },
+      { name: "Coffee maker", icon: "M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-4h8v4H6V4z" },
+      { name: "Community BBQ", icon: "M12 2c.6 3.5-1 5-1 5s2.5 1 2 5h-6c-.5-4 2-5 2-5s-1.6-1.5-1-5h4zm-4 12h8v2H8v-2zm1 4h6v2H9v-2z" },
+    ],
+  },
+  {
+    title: "Comfort & Climate",
+    items: [
+      { name: "Air conditioning", icon: "M12 3v1m0 16v1m-7.07-2.93l.7-.7m12.73-12.73l.7-.7M3 12h1m16 0h1m-2.93 7.07l-.7-.7M5.64 5.64l-.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" },
+      { name: "Linens & towels provided", icon: "M3 7a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2z" },
+      { name: "Self-watering houseplants", icon: "M12 21c-1.5-3-5-6-5-10a5 5 0 0110 0c0 4-3.5 7-5 10z" },
+    ],
+  },
+  {
+    title: "Laundry & Grooming",
+    items: [
+      { name: "Washing machine", icon: "M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a5 5 0 110 10 5 5 0 010-10zm0 3a2 2 0 100 4 2 2 0 000-4zM7 6a1 1 0 110 2 1 1 0 010-2z" },
+      { name: "Drying machine", icon: "M5 3a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5zm7 5a5 5 0 110 10 5 5 0 010-10zm-2 5l4-2v4l-4-2zM7 6a1 1 0 110 2 1 1 0 010-2z" },
+      { name: "Hair dryer", icon: "M21 6c0-1.1-.9-2-2-2h-3l-2 2H7a4 4 0 000 8h7l2 2h3a2 2 0 002-2V6zM3 10h4" },
+      { name: "Iron & ironing board", icon: "M6 20h12M4 14h16l-2-6H6l-2 6zm4-8h8" },
+    ],
+  },
+  {
+    title: "Entertainment & Tech",
+    items: [
+      { name: "High-speed WiFi", icon: "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.858 15.355-5.858 21.213 0" },
+      { name: "Flat-screen TV", icon: "M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm4 14h8" },
+    ],
+  },
+  {
+    title: "Outdoor & Fitness",
+    items: [
+      { name: "Private patio with couch", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4" },
+      { name: "Community pool", icon: "M3 17.25c1.5-2 3-3 4.5-1s3 1 4.5-1 3-3 4.5-1 3 1 4.5-1M3 13.25c1.5-2 3-3 4.5-1s3 1 4.5-1 3-3 4.5-1 3 1 4.5-1" },
+      { name: "Apartment gym (steps away)", icon: "M4 15h2a1 1 0 001-1v-4a1 1 0 00-1-1H4m16 0h-2a1 1 0 00-1 1v4a1 1 0 001 1h2M6 12h12" },
+    ],
+  },
+  {
+    title: "Building & Location",
+    items: [
+      { name: "Keyless entry", icon: "M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" },
+      { name: "Central Venice location", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
+    ],
+  },
 ];
 
 export default function HomePage() {
@@ -47,8 +77,13 @@ export default function HomePage() {
   const [heroIndex, setHeroIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [pastCarousel, setPastCarousel] = useState(false);
+  const [bookingSectionVisible, setBookingSectionVisible] = useState(false);
+  const [canFitSideButton, setCanFitSideButton] = useState(true);
+  const [sideButtonVisible, setSideButtonVisible] = useState(true);
   const calendarRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
+  const bookingSectionRef = useRef<HTMLElement>(null);
+  const sideButtonRef = useRef<HTMLDivElement>(null);
 
   const goNextHero = useCallback(() => {
     setHeroIndex((i) => (i < photos.length - 1 ? i + 1 : 0));
@@ -66,11 +101,23 @@ export default function HomePage() {
   useEffect(() => {
     const checkAll = () => {
       setIsMobile(window.innerWidth < 640);
+      if (calendarRef.current) {
+        const calendarRight = calendarRef.current.getBoundingClientRect().right;
+        setCanFitSideButton(calendarRight + 160 < window.innerWidth);
+      }
     };
     const checkScroll = () => {
       if (titleRef.current) {
         const titleTop = titleRef.current.getBoundingClientRect().top;
         setPastCarousel(titleTop <= 0);
+      }
+      if (bookingSectionRef.current) {
+        const rect = bookingSectionRef.current.getBoundingClientRect();
+        setBookingSectionVisible(rect.top < window.innerHeight && rect.bottom > 0);
+      }
+      if (sideButtonRef.current) {
+        const rect = sideButtonRef.current.getBoundingClientRect();
+        setSideButtonVisible(rect.bottom > 0 && rect.top < window.innerHeight);
       }
     };
     checkAll();
@@ -113,21 +160,22 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50">
+    <main className="min-h-screen bg-stone-50 overflow-x-hidden">
       {/* Hero Carousel */}
       {/* Show all photos - fixed upper right */}
       <button
         onClick={() => setShowAllPhotos(true)}
-        className={`fixed top-4 right-4 z-50 inline-flex items-center gap-2 px-4 py-2 backdrop-blur-sm border rounded-lg text-white text-sm font-medium transition-colors ${
+        className={`fixed top-4 right-4 z-50 inline-flex items-center gap-2 px-3 sm:px-4 py-2 backdrop-blur-sm border rounded-lg text-white text-sm font-medium transition-colors ${
           pastCarousel
             ? "bg-black/80 border-black/60 hover:bg-black/90"
             : "bg-white/20 border-white/40 hover:bg-white/30"
         }`}
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
-        Show all photos
+        <span className="hidden sm:inline">Show all photos</span>
+        <span className="sm:hidden">Photos</span>
       </button>
 
       <section className="relative h-[60vh] w-full group">
@@ -178,8 +226,16 @@ export default function HomePage() {
             Your home in the heart of Venice, steps from the Grand Canal
           </p>
         </div>
-        <div ref={calendarRef} className={`relative transition-all duration-500 ease-in-out ${hasRange ? "mr-[140px]" : "mr-0"}`}>
-          <div className="bg-white rounded-xl shadow-xl p-6">
+        <div ref={calendarRef} className={`relative transition-all duration-500 ease-in-out ${hasRange && canFitSideButton ? "mr-[140px]" : "mr-0"}`}>
+          <div
+            className="bg-white rounded-xl shadow-xl p-6"
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (!target.closest("button, .rdp-day, .rdp-nav, svg")) {
+                setSelectedRange(undefined);
+              }
+            }}
+          >
             <h2 className="text-center text-lg font-semibold text-stone-800 mb-4 font-heading">
               Select from available dates
             </h2>
@@ -238,8 +294,9 @@ export default function HomePage() {
             )}
           </div>
           <div
+            ref={sideButtonRef}
             className={`absolute left-full top-[35%] -translate-y-1/2 ml-4 flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${
-              hasRange ? "opacity-100" : "opacity-0 pointer-events-none"
+              hasRange && canFitSideButton ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
             <button
@@ -250,7 +307,7 @@ export default function HomePage() {
               }
               className="bg-amber-700 text-white px-6 py-4 rounded-lg shadow-lg hover:bg-amber-800 transition-colors flex flex-col items-center gap-1 whitespace-nowrap"
             >
-              <span className="text-2xl font-bold">&euro;{heroTotal.toFixed(0)}</span>
+              <span className="text-2xl font-bold">${heroTotal.toFixed(0)}</span>
               <span className="text-sm opacity-80">
                 {heroNights} night{heroNights !== 1 ? "s" : ""}
               </span>
@@ -434,33 +491,27 @@ export default function HomePage() {
         {/* Amenities */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-stone-800 mb-6 font-heading">Amenities</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {amenities.map((amenity) => (
-              <div
-                key={amenity}
-                className="flex items-center gap-2 text-stone-600"
-              >
-                <svg
-                  className="w-5 h-5 text-amber-700 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>{amenity}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {amenityCategories.map((cat) => (
+              <div key={cat.title}>
+                <h3 className="text-sm font-semibold text-stone-400 uppercase tracking-wider mb-3">{cat.title}</h3>
+                <div className="space-y-2">
+                  {cat.items.map((item) => (
+                    <div key={item.name} className="flex items-center gap-3 text-stone-600">
+                      <svg className="w-5 h-5 text-amber-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
+                      </svg>
+                      <span>{item.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Booking Section */}
-        <section id="booking" className="mb-16">
+        <section id="booking" ref={bookingSectionRef} className="mb-16">
           <h2 className="text-3xl font-bold text-stone-800 mb-6 font-heading">
             Check Availability &amp; Book
           </h2>
@@ -480,7 +531,7 @@ export default function HomePage() {
                 />
                 {availability.dailyRate && (
                   <p className="text-center text-stone-500 mt-3 text-sm">
-                    Starting from &euro;{availability.dailyRate} / night
+                    Starting from ${availability.dailyRate} / night
                   </p>
                 )}
               </div>
@@ -508,6 +559,24 @@ export default function HomePage() {
           )}
         </section>
       </div>
+
+      {/* Fixed bottom-right scroll button for narrow viewports */}
+      <button
+        onClick={() =>
+          document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })
+        }
+        className={`fixed bottom-6 right-4 z-40 bg-amber-700 text-white rounded-full shadow-lg hover:bg-amber-800 transition-all duration-300 flex items-center gap-2 px-4 py-3 ${
+          hasRange && (!canFitSideButton || !sideButtonVisible) && !bookingSectionVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 pointer-events-none translate-y-4"
+        }`}
+      >
+        <span className="text-sm font-bold">${heroTotal.toFixed(0)}</span>
+        <span className="text-xs opacity-80">{heroNights} night{heroNights !== 1 ? "s" : ""}</span>
+        <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
       {/* Footer */}
       <footer className="bg-stone-800 text-stone-400 py-8 text-center text-sm">

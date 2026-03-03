@@ -133,12 +133,12 @@ export default function BookingDetailPage() {
             {Object.entries(breakdown).map(([date, price]) => (
               <div key={date} className="flex justify-between text-sm">
                 <span className="text-gray-700">{date}</span>
-                <span className="text-gray-900">&euro;{price.toFixed(2)}</span>
+                <span className="text-gray-900">${price.toFixed(2)}</span>
               </div>
             ))}
             <div className="border-t pt-2 mt-2 flex justify-between font-semibold">
               <span className="text-gray-900">Total</span>
-              <span className="text-gray-900">&euro;{booking.total_price.toFixed(2)}</span>
+              <span className="text-gray-900">${booking.total_price.toFixed(2)}</span>
             </div>
           </div>
         </div>
