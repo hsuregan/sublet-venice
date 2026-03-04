@@ -59,7 +59,7 @@ export default function BookingCalendar({
         selected={selectedRange}
         onSelect={onRangeChange}
         disabled={isDateDisabled}
-        numberOfMonths={isMobile ? 1 : 2}
+        numberOfMonths={1}
         showOutsideDays={false}
         className="!font-sans"
         classNames={{
