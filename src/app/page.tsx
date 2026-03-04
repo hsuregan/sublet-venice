@@ -5,7 +5,7 @@ import Image from "next/image";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { DateRange } from "react-day-picker";
-import { isBefore, startOfDay, parseISO, isWithinInterval } from "date-fns";
+import { isBefore, startOfDay, parseISO, isWithinInterval, eachDayOfInterval, format } from "date-fns";
 import PhotoDialog, { photos } from "@/components/PhotoGallery";
 import BookingCalendar from "@/components/BookingCalendar";
 import BookingForm from "@/components/BookingForm";
@@ -187,25 +187,56 @@ export default function HomePage() {
   }, []);
 
   // Compute earliest and latest months with available dates
-  const earliestAvailMonth = availability?.availableDateRanges?.length
-    ? (() => {
-        const today = startOfDay(new Date());
-        const first = parseISO(availability.availableDateRanges[0].from);
-        const d = isBefore(first, today) ? today : first;
-        return new Date(d.getFullYear(), d.getMonth(), 1);
-      })()
-    : null;
-  const latestAvailMonth = availability?.availableDateRanges?.length
-    ? (() => {
-        const last = parseISO(availability.availableDateRanges[availability.availableDateRanges.length - 1].to);
-        return new Date(last.getFullYear(), last.getMonth(), 1);
-      })()
-    : null;
+  const today = startOfDay(new Date());
+  const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const canGoPrev = earliestAvailMonth ? month > earliestAvailMonth : false;
-  const canGoNext = latestAvailMonth ? month < latestAvailMonth : false;
+  // Collect all months that have at least one bookable date
+  const bookableMonths = new Set<string>();
+  if (availability?.availableDateRanges) {
+    const blockedSet = new Set(availability.blockedDates);
+    for (const range of availability.availableDateRanges) {
+      const from = parseISO(range.from);
+      const to = parseISO(range.to);
+      const days = eachDayOfInterval({ start: from, end: to });
+      for (const day of days) {
+        if (isBefore(day, today)) continue;
+        const dateStr = format(day, "yyyy-MM-dd");
+        if (blockedSet.has(dateStr)) continue;
+        const monthKey = `${day.getFullYear()}-${day.getMonth()}`;
+        bookableMonths.add(monthKey);
+      }
+    }
+  }
+
+  const bookableMonthArr = Array.from(bookableMonths);
+  const hasBookableBefore = bookableMonthArr.some((key) => {
+    const [y, m] = key.split("-").map(Number);
+    return new Date(y, m, 1) < month;
+  });
+  const hasBookableAfter = bookableMonthArr.some((key) => {
+    const [y, m] = key.split("-").map(Number);
+    return new Date(y, m, 1) > month;
+  });
+
+  const prevMonth = new Date(month.getFullYear(), month.getMonth() - 1, 1);
+  const canGoPrev = hasBookableBefore && prevMonth >= currentMonth;
+  const canGoNext = hasBookableAfter;
 
   const hasRange = !!(selectedRange?.from && selectedRange?.to && availability);
+  let totalPrice = 0;
+  if (hasRange) {
+    const overrideMap = new Map(
+      availability!.priceOverrides.map((o) => [o.date, o.price])
+    );
+    const stayDates = eachDayOfInterval({
+      start: selectedRange!.from!,
+      end: selectedRange!.to!,
+    });
+    totalPrice = stayDates.reduce((sum, date) => {
+      const dateStr = format(date, "yyyy-MM-dd");
+      return sum + (overrideMap.get(dateStr) ?? availability!.dailyRate);
+    }, 0);
+  }
 
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden">
@@ -394,7 +425,7 @@ export default function HomePage() {
             </svg>
           </button>
           <div
-            className="bg-white rounded-xl shadow-xl px-6 pt-4 pb-8"
+            className="bg-white rounded-xl shadow-xl px-6 pt-4 pb-8 relative overflow-hidden"
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (!target.closest("button, .rdp-day, .rdp-nav, svg")) {
@@ -402,6 +433,22 @@ export default function HomePage() {
               }
             }}
           >
+            {/* Price ribbon */}
+            <div
+              className={`absolute top-0 right-0 w-[120px] h-[120px] pointer-events-none z-10 transition-opacity duration-500 ${
+                hasRange ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <div
+                className="absolute top-[18px] right-[-32px] w-[170px] text-center rotate-45 py-1.5 text-amber-900 text-xs font-semibold tracking-wide"
+                style={{
+                  background: "linear-gradient(135deg, #f5d020, #f7e06e 40%, #e6b800 60%, #f7e06e)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5)",
+                }}
+              >
+                ${totalPrice.toLocaleString()}
+              </div>
+            </div>
             {availability && (
               <div
                 className="overflow-hidden transition-[height] duration-300 ease-in-out"
@@ -413,21 +460,94 @@ export default function HomePage() {
                 month={month}
                 onMonthChange={setMonth}
                 selected={selectedRange}
-                onSelect={setSelectedRange}
+                onSelect={(range) => {
+                  // If a complete range exists and user clicks a new date, start fresh
+                  if (selectedRange?.from && selectedRange?.to && range?.from) {
+                    setSelectedRange({ from: range.from, to: undefined });
+                  } else {
+                    setSelectedRange(range);
+                  }
+                }}
                 numberOfMonths={1}
                 showOutsideDays={false}
+                modifiers={{
+                  unavailable: (date: Date) => {
+                    const t = startOfDay(new Date());
+                    if (isBefore(date, t)) return false;
+                    const dateStr = date.toISOString().split("T")[0];
+                    if (new Set(availability.blockedDates).has(dateStr)) return true;
+                    if (availability.availableDateRanges.length === 0) return true;
+                    return !availability.availableDateRanges.some((range) =>
+                      isWithinInterval(date, {
+                        start: parseISO(range.from),
+                        end: parseISO(range.to),
+                      })
+                    );
+                  },
+                }}
+                modifiersStyles={{
+                  unavailable: { position: "relative" as const },
+                }}
+                hidden={(date) => {
+                  const t = startOfDay(new Date());
+                  return isBefore(date, t);
+                }}
+                components={{
+                  DayContent: ({ date }: { date: Date }) => {
+                    const t = startOfDay(new Date());
+                    const isUnavail = (() => {
+                      if (isBefore(date, t)) return false;
+                      const dateStr = date.toISOString().split("T")[0];
+                      if (new Set(availability.blockedDates).has(dateStr)) return true;
+                      if (availability.availableDateRanges.length === 0) return true;
+                      return !availability.availableDateRanges.some((range) =>
+                        isWithinInterval(date, {
+                          start: parseISO(range.from),
+                          end: parseISO(range.to),
+                        })
+                      );
+                    })();
+                    if (isUnavail) {
+                      return (
+                        <span className="flex items-center justify-center w-full h-full">
+                          <span className="w-2 h-2 rounded-full bg-stone-300" />
+                        </span>
+                      );
+                    }
+                    return <span>{date.getDate()}</span>;
+                  },
+                }}
                 disabled={(date) => {
-                  const today = startOfDay(new Date());
-                  if (isBefore(date, today)) return true;
-                  const dateStr = date.toISOString().split("T")[0];
-                  if (new Set(availability.blockedDates).has(dateStr)) return true;
-                  if (availability.availableDateRanges.length === 0) return true;
-                  return !availability.availableDateRanges.some((range) =>
-                    isWithinInterval(date, {
-                      start: parseISO(range.from),
-                      end: parseISO(range.to),
-                    })
-                  );
+                  const t = startOfDay(new Date());
+                  // Disable unavailable dates (shown as dots)
+                  if (!isBefore(date, t)) {
+                    const dateStr = date.toISOString().split("T")[0];
+                    const blockedSet = new Set(availability.blockedDates);
+                    if (blockedSet.has(dateStr)) return true;
+                    if (availability.availableDateRanges.length === 0) return true;
+                    const inRange = availability.availableDateRanges.some((range) =>
+                      isWithinInterval(date, { start: parseISO(range.from), end: parseISO(range.to) })
+                    );
+                    if (!inRange) return true;
+                  }
+                  // When start is selected but no end, disable dates beyond the next gap
+                  if (selectedRange?.from && !selectedRange?.to) {
+                    const start = startOfDay(selectedRange.from);
+                    if (isBefore(date, start)) return true;
+                    const blockedSet = new Set(availability.blockedDates);
+                    const d = new Date(start);
+                    while (d <= date) {
+                      const ds = d.toISOString().split("T")[0];
+                      const inRange = availability.availableDateRanges.some((range) =>
+                        isWithinInterval(d, { start: parseISO(range.from), end: parseISO(range.to) })
+                      );
+                      if (!inRange || blockedSet.has(ds)) {
+                        return date >= d;
+                      }
+                      d.setDate(d.getDate() + 1);
+                    }
+                  }
+                  return false;
                 }}
                 className="!font-sans"
                 classNames={{
@@ -448,7 +568,7 @@ export default function HomePage() {
                     "!bg-amber-700 !text-white hover:!bg-amber-800 focus:!bg-amber-800",
                   day_today: "bg-stone-200 font-semibold",
                   day_outside: "text-stone-400 opacity-50",
-                  day_disabled: "text-stone-300 opacity-50 cursor-not-allowed",
+                  day_disabled: "text-stone-300 opacity-100 cursor-default pointer-events-none",
                   day_range_middle: "!bg-amber-100 !text-amber-900",
                   day_range_start: "!bg-amber-700 !text-white rounded-full",
                   day_range_end: "!bg-amber-700 !text-white rounded-full",

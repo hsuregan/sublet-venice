@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { isBefore, startOfDay, parseISO, isWithinInterval } from "date-fns";
@@ -23,13 +23,6 @@ export default function BookingCalendar({
   selectedRange,
   onRangeChange,
 }: BookingCalendarProps) {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
 
   const today = startOfDay(new Date());
   const blockedSet = new Set(availability.blockedDates);
