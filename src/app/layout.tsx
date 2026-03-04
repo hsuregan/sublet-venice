@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-heading",
+  display: "swap",
+});
+
+const blisey = localFont({
+  src: "../../public/fonts/blisey.otf",
+  variable: "--font-blisey",
   display: "swap",
 });
 
@@ -16,9 +23,9 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Venice Apartment - Direct Booking",
+  title: "Venice Beach Apartment | Book Direct & Save",
   description:
-    "Book a charming apartment in the heart of Venice. Direct booking, no middlemen.",
+    "Cozy 1BR apartment in Venice Beach, LA. Steps from the boardwalk, Abbot Kinney, and the beach. Book direct — no service fees.",
 };
 
 export default function RootLayout({
@@ -28,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${lato.variable} font-body antialiased`}>
+      <body className={`${playfair.variable} ${lato.variable} ${blisey.variable} font-body antialiased`}>
         {children}
       </body>
     </html>

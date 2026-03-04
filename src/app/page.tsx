@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -74,37 +74,45 @@ export default function HomePage() {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [heroIndex, setHeroIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [heroLightboxIndex, setHeroLightboxIndex] = useState<number | null>(null);
+  const [month, setMonth] = useState(() => new Date());
   const [pastCarousel, setPastCarousel] = useState(false);
   const [bookingSectionVisible, setBookingSectionVisible] = useState(false);
   const [canFitSideButton, setCanFitSideButton] = useState(true);
   const [sideButtonVisible, setSideButtonVisible] = useState(true);
+  const [arrowTopOffset, setArrowTopOffset] = useState<number | null>(null);
+  const [fixedTranslateY, setFixedTranslateY] = useState<number | null>(null);
+  const [dpHeight, setDpHeight] = useState<number | undefined>(undefined);
+  const [layoutReady, setLayoutReady] = useState(false);
+  const [splashTransform, setSplashTransform] = useState('');
+  const splashTitleRef = useRef<HTMLHeadingElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const dpInnerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const bookingSectionRef = useRef<HTMLElement>(null);
   const sideButtonRef = useRef<HTMLDivElement>(null);
 
-  const goNextHero = useCallback(() => {
-    setHeroIndex((i) => (i < photos.length - 1 ? i + 1 : 0));
-  }, []);
-
-  const goPrevHero = useCallback(() => {
-    setHeroIndex((i) => (i > 0 ? i - 1 : photos.length - 1));
-  }, []);
-
   useEffect(() => {
-    const timer = setInterval(goNextHero, 5000);
-    return () => clearInterval(timer);
-  }, [goNextHero]);
-
-  useEffect(() => {
+    const measureLayout = () => {
+      if (outerRef.current && calendarRef.current) {
+        const calTop = calendarRef.current.offsetTop;
+        const calH = calendarRef.current.offsetHeight;
+        // Calendar midpoint should sit at the hero bottom edge
+        const translateY = calTop + calH / 2;
+        setFixedTranslateY(translateY);
+        // Arrow offset: hero boundary relative to calendar top
+        setArrowTopOffset(calH / 2);
+      }
+    };
     const checkAll = () => {
       setIsMobile(window.innerWidth < 640);
       if (calendarRef.current) {
         const calendarRight = calendarRef.current.getBoundingClientRect().right;
         setCanFitSideButton(calendarRight + 160 < window.innerWidth);
       }
+      measureLayout();
     };
     const checkScroll = () => {
       if (titleRef.current) {
@@ -130,6 +138,47 @@ export default function HomePage() {
     };
   }, []);
 
+  // After calendar renders: measure layout and reveal, start ResizeObserver
+  useEffect(() => {
+    // Double-rAF ensures layout is fully settled across browsers
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (outerRef.current && calendarRef.current) {
+          const calTop = calendarRef.current.offsetTop;
+          const calH = calendarRef.current.offsetHeight;
+          setFixedTranslateY(calTop + calH / 2);
+          setArrowTopOffset(calH / 2);
+        }
+      });
+    });
+
+    if (!dpInnerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setDpHeight(entry.contentRect.height);
+      }
+    });
+    observer.observe(dpInnerRef.current);
+    return () => observer.disconnect();
+  }, [availability]);
+
+  // Once transforms are applied, measure title target and reveal
+  useEffect(() => {
+    if (fixedTranslateY === null || !availability) return;
+    requestAnimationFrame(() => {
+      if (splashTitleRef.current && titleRef.current) {
+        const splash = splashTitleRef.current.getBoundingClientRect();
+        const realH1 = titleRef.current.querySelector('h1');
+        if (realH1) {
+          const target = realH1.getBoundingClientRect();
+          const dx = (target.left + target.width / 2) - (splash.left + splash.width / 2);
+          const dy = (target.top + target.height / 2) - (splash.top + splash.height / 2);
+          setSplashTransform(`translate(${dx}px, ${dy}px)`);
+        }
+      }
+      setLayoutReady(true);
+    });
+  }, [fixedTranslateY, availability]);
 
   useEffect(() => {
     fetch("/api/availability")
@@ -161,7 +210,22 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-stone-50 overflow-x-hidden">
-      {/* Hero Carousel */}
+      {/* Splash overlay — covers page until layout is ready */}
+      <div
+        className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-700 ${
+          layoutReady ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
+      >
+        <div className={`absolute inset-0 bg-stone-900 transition-opacity duration-700 ${layoutReady ? "opacity-0" : "opacity-100"}`} />
+        <h1
+          ref={splashTitleRef}
+          className="relative z-10 text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent transition-transform duration-700 ease-in-out"
+          style={{ fontFamily: "var(--font-blisey), serif", transform: splashTransform || undefined }}
+        >
+          Stay in Venice Beach
+        </h1>
+      </div>
+
       {/* Show all photos - fixed upper right */}
       <button
         onClick={() => setShowAllPhotos(true)}
@@ -178,57 +242,163 @@ export default function HomePage() {
         <span className="sm:hidden">Photos</span>
       </button>
 
-      <section className="relative h-[60vh] w-full group">
-        {photos.map((photo, index) => (
-          <div
-            key={photo}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === heroIndex ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <Image
-              src={`/images/${photo}`}
-              alt={`Venice apartment ${index + 1}`}
-              fill
-              className="object-cover"
-              priority={index === 0}
-            />
+      <section className="relative h-[60vh] w-full overflow-hidden">
+        {/* Mosaic rows */}
+        <div className="flex flex-col gap-2 h-full py-2">
+          {/* Row 1 — scrolls left, 60s */}
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="flex gap-2 h-full w-max"
+              style={{ animation: "scroll-left 60s linear infinite" }}
+            >
+              {[
+                { photo: photos[6], w: 400 },
+                { photo: photos[12], w: 190 },
+                { photo: photos[2], w: 400 },
+                { photo: photos[14], w: 270 },
+                { photo: photos[7], w: 400 },
+                { photo: photos[1], w: 190 },
+                { photo: photos[18], w: 270 },
+              ].flatMap((item, i) => [
+                { ...item, key: `r1a-${i}` },
+                { ...item, key: `r1b-${i}` },
+              ]).map(({ photo, w, key }) => (
+                <div
+                  key={key}
+                  className="relative h-full rounded-lg overflow-hidden flex-shrink-0 cursor-pointer"
+                  style={{ width: `${w}px` }}
+                  onClick={() => setHeroLightboxIndex(photos.indexOf(photo))}
+                >
+                  <Image
+                    src={`/images/${photo}`}
+                    alt="Venice apartment"
+                    fill
+                    className="object-cover"
+                    sizes={`${w}px`}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-        <div className="absolute inset-0 bg-black/30" />
-
-        {/* Carousel arrows — at vertical midpoint of carousel */}
-        <button
-          onClick={goPrevHero}
-          className="absolute left-3 top-1/3 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={goNextHero}
-          className="absolute right-3 top-1/3 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+          {/* Row 2 — scrolls right, 65s */}
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="flex gap-2 h-full w-max"
+              style={{ animation: "scroll-right 65s linear infinite" }}
+            >
+              {[
+                { photo: photos[3], w: 380 },
+                { photo: photos[9], w: 190 },
+                { photo: photos[19], w: 420 },
+                { photo: photos[15], w: 190 },
+                { photo: photos[0], w: 270 },
+                { photo: photos[5], w: 260 },
+                { photo: photos[4], w: 270 },
+              ].flatMap((item, i) => [
+                { ...item, key: `r2a-${i}` },
+                { ...item, key: `r2b-${i}` },
+              ]).map(({ photo, w, key }) => (
+                <div
+                  key={key}
+                  className="relative h-full rounded-lg overflow-hidden flex-shrink-0 cursor-pointer"
+                  style={{ width: `${w}px` }}
+                  onClick={() => setHeroLightboxIndex(photos.indexOf(photo))}
+                >
+                  <Image
+                    src={`/images/${photo}`}
+                    alt="Venice apartment"
+                    fill
+                    className="object-cover"
+                    sizes={`${w}px`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Row 3 — scrolls left, 55s */}
+          <div className="flex-1 overflow-hidden">
+            <div
+              className="flex gap-2 h-full w-max"
+              style={{ animation: "scroll-left 55s linear infinite" }}
+            >
+              {[
+                { photo: photos[10], w: 400 },
+                { photo: photos[17], w: 190 },
+                { photo: photos[16], w: 300 },
+                { photo: photos[11], w: 190 },
+                { photo: photos[8], w: 280 },
+                { photo: photos[13], w: 190 },
+              ].flatMap((item, i) => [
+                { ...item, key: `r3a-${i}` },
+                { ...item, key: `r3b-${i}` },
+              ]).map(({ photo, w, key }) => (
+                <div
+                  key={key}
+                  className="relative h-full rounded-lg overflow-hidden flex-shrink-0 cursor-pointer"
+                  style={{ width: `${w}px` }}
+                  onClick={() => setHeroLightboxIndex(photos.indexOf(photo))}
+                >
+                  <Image
+                    src={`/images/${photo}`}
+                    alt="Venice apartment"
+                    fill
+                    className="object-cover"
+                    sizes={`${w}px`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
       </section>
 
       {/* Title + Calendar — calendar midpoint sits at the hero/content horizon */}
-      <div className="relative z-10 flex flex-col items-center px-4 -translate-y-1/2 mb-[-120px]">
-        <div ref={titleRef} className="text-center text-white px-4 mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 font-heading drop-shadow-lg">
-            Charming Apartment in Venice
+      <div
+        ref={outerRef}
+        className={`relative z-10 flex flex-col items-center px-4 mb-[-120px] transition-opacity duration-500 ${layoutReady ? 'opacity-100' : 'opacity-0'}`}
+        style={{ transform: `translateY(-${fixedTranslateY !== null ? `${fixedTranslateY}px` : '50%'})` }}
+      >
+        <div
+          ref={titleRef}
+          className="text-center text-white px-8 py-6 mb-4 rounded-2xl bg-gradient-to-br from-amber-900/60 via-stone-900/50 to-stone-800/40 backdrop-blur-sm"
+          style={{
+            maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+            maskComposite: "intersect",
+            WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
+            WebkitMaskComposite: "destination-in",
+          }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent" style={{ fontFamily: "var(--font-blisey), serif" }}>
+            Stay in Venice Beach
           </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
-            Your home in the heart of Venice, steps from the Grand Canal
+          <p className="text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md text-stone-100">
+            Select from available dates below
           </p>
         </div>
         <div ref={calendarRef} className={`relative transition-all duration-500 ease-in-out ${hasRange && canFitSideButton ? "mr-[140px]" : "mr-0"}`}>
+          {/* Calendar nav arrows — outside the white box, at the hero/content boundary */}
+          <button
+            onClick={() => setMonth(m => { const d = new Date(m); d.setMonth(d.getMonth() - 1); return d; })}
+            className="absolute -left-6 -translate-y-1/2 z-10 h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-amber-700 shadow-[0_4px_20px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_2px_rgba(0,0,0,0.1)]"
+            style={{ top: arrowTopOffset ?? 0 }}
+          >
+            <svg className="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setMonth(m => { const d = new Date(m); d.setMonth(d.getMonth() + 1); return d; })}
+            className="absolute -right-6 -translate-y-1/2 z-10 h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-amber-700 shadow-[0_4px_20px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_2px_rgba(0,0,0,0.1)]"
+            style={{ top: arrowTopOffset ?? 0 }}
+          >
+            <svg className="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
           <div
-            className="bg-white rounded-xl shadow-xl p-6"
+            className="bg-white rounded-xl shadow-xl px-6 pt-4 pb-8"
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (!target.closest("button, .rdp-day, .rdp-nav, svg")) {
@@ -236,12 +406,16 @@ export default function HomePage() {
               }
             }}
           >
-            <h2 className="text-center text-lg font-semibold text-stone-800 mb-4 font-heading">
-              Select from available dates
-            </h2>
             {availability && (
+              <div
+                className="overflow-hidden transition-[height] duration-300 ease-in-out"
+                style={{ height: dpHeight !== undefined ? `${dpHeight}px` : 'auto' }}
+              >
+              <div ref={dpInnerRef} className="pb-2">
               <DayPicker
                 mode="range"
+                month={month}
+                onMonthChange={setMonth}
                 selected={selectedRange}
                 onSelect={setSelectedRange}
                 numberOfMonths={isMobile ? 1 : 2}
@@ -266,13 +440,7 @@ export default function HomePage() {
                   caption:
                     "flex justify-center pt-1 items-center text-stone-800",
                   caption_label: "text-sm font-medium",
-                  nav: "space-x-1 flex items-center",
-                  nav_button:
-                    "h-9 w-9 p-0 bg-stone-700 hover:bg-stone-800 text-white rounded-full inline-flex items-center justify-center transition-colors",
-                  nav_button_previous:
-                    "!absolute left-2 top-1/2 -translate-y-1/2",
-                  nav_button_next:
-                    "!absolute right-2 top-1/2 -translate-y-1/2",
+                  nav: "hidden",
                   table: "w-full border-collapse space-y-1",
                   head_row: "flex",
                   head_cell:
@@ -291,13 +459,16 @@ export default function HomePage() {
                   day_hidden: "invisible",
                 }}
               />
+              </div>
+              </div>
             )}
           </div>
           <div
             ref={sideButtonRef}
-            className={`absolute left-full top-[35%] -translate-y-1/2 ml-4 flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${
+            className={`absolute left-full -translate-y-1/2 ml-10 flex flex-col items-center gap-3 transition-all duration-500 ease-in-out ${
               hasRange && canFitSideButton ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
+            style={{ top: arrowTopOffset ?? 0 }}
           >
             <button
               onClick={() =>
@@ -324,7 +495,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 md:px-16 pb-12 -mt-44">
+      <div className="max-w-6xl mx-auto px-8 md:px-16 pb-12 -mt-56">
         {/* Description */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-stone-800 mb-6 font-heading">
@@ -584,6 +755,7 @@ export default function HomePage() {
       </footer>
 
       <PhotoDialog open={showAllPhotos} onClose={() => setShowAllPhotos(false)} />
+      <PhotoDialog open={heroLightboxIndex !== null} onClose={() => setHeroLightboxIndex(null)} initialIndex={heroLightboxIndex} />
     </main>
   );
 }
