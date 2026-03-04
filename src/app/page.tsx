@@ -7,7 +7,6 @@ import "react-day-picker/dist/style.css";
 import { DateRange } from "react-day-picker";
 import { isBefore, startOfDay, parseISO, isWithinInterval, eachDayOfInterval, format } from "date-fns";
 import PhotoDialog, { photos } from "@/components/PhotoGallery";
-import BookingCalendar from "@/components/BookingCalendar";
 import BookingForm from "@/components/BookingForm";
 
 interface AvailabilityData {
@@ -252,7 +251,7 @@ export default function HomePage() {
           className="relative z-10 text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent transition-transform duration-700 ease-in-out"
           style={{ fontFamily: "var(--font-title), serif", transform: splashTransform || undefined }}
         >
-          Stay in Venice Beach
+          Venice Beach Pad
         </h1>
       </div>
 
@@ -374,12 +373,12 @@ export default function HomePage() {
       {/* Title + Calendar — calendar midpoint sits at the hero/content horizon */}
       <div
         ref={outerRef}
-        className={`relative z-10 flex flex-col items-center px-4 mb-[-120px] transition-opacity duration-500 ${layoutReady ? 'opacity-100' : 'opacity-0'}`}
+        className={`relative z-10 flex flex-col items-center px-4 mb-[-120px] transition-opacity duration-500 pointer-events-none ${layoutReady ? 'opacity-100' : 'opacity-0'}`}
         style={{ transform: `translateY(-${fixedTranslateY !== null ? `${fixedTranslateY}px` : '50%'})` }}
       >
         <div
           ref={titleRef}
-          className="text-center text-white px-8 py-6 mb-4 rounded-2xl bg-gradient-to-br from-amber-900/60 via-stone-900/50 to-stone-800/40 backdrop-blur-sm"
+          className="text-center text-white px-8 py-6 mb-4 rounded-2xl bg-gradient-to-br from-amber-900/60 via-stone-900/50 to-stone-800/40 backdrop-blur-sm pointer-events-auto"
           style={{
             maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent), linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)",
             maskComposite: "intersect",
@@ -388,13 +387,13 @@ export default function HomePage() {
           }}
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent" style={{ fontFamily: "var(--font-title), serif" }}>
-            Stay in Venice Beach
+            Venice Beach Pad
           </h1>
           <p className="text-base md:text-lg text-stone-200 drop-shadow-md">
-            Spacious 1 bed, 1 bath &middot; open living room &amp; kitchen &middot; private patio
+            Sun-filled 1 bed, 1 bath &middot; full kitchen &middot; private patio retreat
           </p>
         </div>
-        <div ref={calendarRef} className="relative">
+        <div ref={calendarRef} className="relative pointer-events-auto">
           {/* Calendar nav arrows — outside the white box, at the hero/content boundary */}
           <button
             onClick={() => setMonth(m => { const d = new Date(m); d.setMonth(d.getMonth() - 1); return d; })}
@@ -514,7 +513,7 @@ export default function HomePage() {
                     if (isUnavail) {
                       return (
                         <span className="flex items-center justify-center w-full h-full">
-                          <span className="text-xl font-semibold" style={{ color: "#78716c" }}>&times;</span>
+                          <span className="text-xl font-semibold" style={{ color: "#d6d3d1" }}>&times;</span>
                         </span>
                       );
                     }
@@ -794,11 +793,163 @@ export default function HomePage() {
                 <p className="text-stone-500 mb-4">
                   Select your check-in and check-out dates:
                 </p>
-                <BookingCalendar
-                  availability={availability}
-                  selectedRange={selectedRange}
-                  onRangeChange={setSelectedRange}
-                />
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setMonth(m => { const d = new Date(m); d.setMonth(d.getMonth() - 1); return d; })}
+                    disabled={!canGoPrev}
+                    className={`absolute -left-5 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md border border-white/40 shadow-[0_4px_20px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_2px_rgba(0,0,0,0.1)] ${
+                      canGoPrev
+                        ? "bg-white/20 hover:bg-white/30 text-amber-700 hover:scale-110 active:scale-95 cursor-pointer"
+                        : "bg-white/10 text-stone-400 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <svg className="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setMonth(m => { const d = new Date(m); d.setMonth(d.getMonth() + 1); return d; })}
+                    disabled={!canGoNext}
+                    className={`absolute -right-5 top-1/2 -translate-y-1/2 z-10 h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-md border border-white/40 shadow-[0_4px_20px_rgba(0,0,0,0.15),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_2px_rgba(0,0,0,0.1)] ${
+                      canGoNext
+                        ? "bg-white/20 hover:bg-white/30 text-amber-700 hover:scale-110 active:scale-95 cursor-pointer"
+                        : "bg-white/10 text-stone-400 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <svg className="w-5 h-5 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  <div
+                    className="bg-white rounded-xl shadow-xl px-4 pt-3 pb-4 relative overflow-hidden inline-block"
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (!target.closest("button, .rdp-day, .rdp-nav, svg")) {
+                        setSelectedRange(undefined);
+                      }
+                    }}
+                  >
+                    {/* Price ribbon */}
+                    <div
+                      className={`absolute top-0 right-0 w-[120px] h-[120px] z-10 transition-opacity duration-500 ${
+                        hasRange ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                      }`}
+                    >
+                      <div
+                        className="absolute top-[18px] right-[-32px] w-[170px] text-center rotate-45 py-1.5 text-amber-900 text-xs font-semibold tracking-wide"
+                        style={{
+                          background: "linear-gradient(135deg, #f5d020, #f7e06e 40%, #e6b800 60%, #f7e06e)",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5)",
+                        }}
+                      >
+                        ${totalPrice.toLocaleString()}
+                      </div>
+                    </div>
+                    <DayPicker
+                      mode="range"
+                      month={month}
+                      onMonthChange={setMonth}
+                      selected={selectedRange}
+                      onSelect={(range) => {
+                        if (selectedRange?.from && selectedRange?.to && range?.from) {
+                          setSelectedRange({ from: range.from, to: undefined });
+                        } else {
+                          setSelectedRange(range);
+                        }
+                      }}
+                      numberOfMonths={1}
+                      showOutsideDays={false}
+                      modifiers={{
+                        unavailable: (date: Date) => {
+                          const t = startOfDay(new Date());
+                          if (isBefore(date, t)) return false;
+                          const dateStr = date.toISOString().split("T")[0];
+                          if (new Set(availability.blockedDates).has(dateStr)) return true;
+                          if (availability.availableDateRanges.length === 0) return true;
+                          return !availability.availableDateRanges.some((range) =>
+                            isWithinInterval(date, { start: parseISO(range.from), end: parseISO(range.to) })
+                          );
+                        },
+                      }}
+                      modifiersStyles={{
+                        unavailable: { position: "relative" as const },
+                      }}
+                      hidden={(date) => isBefore(date, startOfDay(new Date()))}
+                      components={{
+                        DayContent: ({ date }: { date: Date }) => {
+                          const t = startOfDay(new Date());
+                          const isUnavail = (() => {
+                            if (isBefore(date, t)) return false;
+                            const dateStr = date.toISOString().split("T")[0];
+                            if (new Set(availability.blockedDates).has(dateStr)) return true;
+                            if (availability.availableDateRanges.length === 0) return true;
+                            return !availability.availableDateRanges.some((range) =>
+                              isWithinInterval(date, { start: parseISO(range.from), end: parseISO(range.to) })
+                            );
+                          })();
+                          if (isUnavail) {
+                            return (
+                              <span className="flex items-center justify-center w-full h-full">
+                                <span className="text-xl font-semibold" style={{ color: "#d6d3d1" }}>&times;</span>
+                              </span>
+                            );
+                          }
+                          return <span>{date.getDate()}</span>;
+                        },
+                      }}
+                      disabled={(date) => {
+                        const t = startOfDay(new Date());
+                        if (!isBefore(date, t)) {
+                          const dateStr = date.toISOString().split("T")[0];
+                          const blockedSet = new Set(availability.blockedDates);
+                          if (blockedSet.has(dateStr)) return true;
+                          if (availability.availableDateRanges.length === 0) return true;
+                          const inRange = availability.availableDateRanges.some((range) =>
+                            isWithinInterval(date, { start: parseISO(range.from), end: parseISO(range.to) })
+                          );
+                          if (!inRange) return true;
+                        }
+                        if (selectedRange?.from && !selectedRange?.to) {
+                          const start = startOfDay(selectedRange.from);
+                          if (isBefore(date, start)) return true;
+                          const blockedSet = new Set(availability.blockedDates);
+                          const d = new Date(start);
+                          while (d <= date) {
+                            const ds = d.toISOString().split("T")[0];
+                            const inRange = availability.availableDateRanges.some((range) =>
+                              isWithinInterval(d, { start: parseISO(range.from), end: parseISO(range.to) })
+                            );
+                            if (!inRange || blockedSet.has(ds)) { return date >= d; }
+                            d.setDate(d.getDate() + 1);
+                          }
+                        }
+                        return false;
+                      }}
+                      className="!font-sans"
+                      classNames={{
+                        months: "flex flex-col sm:flex-row gap-4",
+                        month: "space-y-4",
+                        caption: "flex justify-center pt-1 items-center text-stone-800",
+                        caption_label: "text-sm font-medium",
+                        nav: "hidden",
+                        table: "w-full border-collapse space-y-1",
+                        head_row: "flex",
+                        head_cell: "text-stone-500 rounded-md w-9 font-normal text-[0.8rem]",
+                        row: "flex w-full mt-2",
+                        cell: "h-9 w-9 text-center text-sm p-0 relative",
+                        day: "h-7 w-7 p-0 font-normal aria-selected:opacity-100 hover:bg-stone-200 rounded-full inline-flex items-center justify-center",
+                        day_selected: "!bg-amber-700 !text-white hover:!bg-amber-800 focus:!bg-amber-800",
+                        day_today: "bg-stone-200 font-semibold",
+                        day_outside: "text-stone-400 opacity-50",
+                        day_disabled: "text-stone-300 opacity-100 cursor-default pointer-events-none",
+                        day_range_middle: "!bg-amber-100 !text-amber-900",
+                        day_range_start: "!bg-amber-700 !text-white rounded-full",
+                        day_range_end: "!bg-amber-700 !text-white rounded-full",
+                        day_hidden: "invisible",
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
               <div>
                 {selectedRange?.from && selectedRange?.to ? (
