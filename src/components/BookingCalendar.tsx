@@ -1,6 +1,5 @@
 "use client";
 
-
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { isBefore, startOfDay, parseISO, isWithinInterval } from "date-fns";
@@ -27,22 +26,17 @@ export default function BookingCalendar({
   const today = startOfDay(new Date());
   const blockedSet = new Set(availability.blockedDates);
 
-  const isDateDisabled = (date: Date): boolean => {
-    if (isBefore(date, today)) return true;
-
+  const isDateUnavailable = (date: Date): boolean => {
+    if (isBefore(date, today)) return false;
     const dateStr = date.toISOString().split("T")[0];
     if (blockedSet.has(dateStr)) return true;
-
-    // Only allow dates within available ranges (no ranges = nothing bookable)
     if (availability.availableDateRanges.length === 0) return true;
-    const inRange = availability.availableDateRanges.some((range) => {
-      const from = parseISO(range.from);
-      const to = parseISO(range.to);
-      return isWithinInterval(date, { start: from, end: to });
-    });
-    if (!inRange) return true;
-
-    return false;
+    return !availability.availableDateRanges.some((range) =>
+      isWithinInterval(date, {
+        start: parseISO(range.from),
+        end: parseISO(range.to),
+      })
+    );
   };
 
   return (
@@ -50,10 +44,65 @@ export default function BookingCalendar({
       <DayPicker
         mode="range"
         selected={selectedRange}
-        onSelect={onRangeChange}
-        disabled={isDateDisabled}
+        onSelect={(range) => {
+          // If a complete range exists and user clicks a new date, start fresh
+          if (selectedRange?.from && selectedRange?.to && range?.from) {
+            onRangeChange({ from: range.from, to: undefined });
+          } else {
+            onRangeChange(range);
+          }
+        }}
         numberOfMonths={1}
         showOutsideDays={false}
+        modifiers={{
+          unavailable: isDateUnavailable,
+        }}
+        modifiersStyles={{
+          unavailable: { position: "relative" as const },
+        }}
+        hidden={(date) => isBefore(date, today)}
+        components={{
+          DayContent: ({ date }: { date: Date }) => {
+            if (isDateUnavailable(date)) {
+              return (
+                <span className="flex items-center justify-center w-full h-full">
+                  <span className="text-xl font-semibold" style={{ color: "#78716c" }}>&times;</span>
+                </span>
+              );
+            }
+            return <span>{date.getDate()}</span>;
+          },
+        }}
+        disabled={(date) => {
+          const t = startOfDay(new Date());
+          // Disable unavailable dates (shown as x)
+          if (!isBefore(date, t)) {
+            const dateStr = date.toISOString().split("T")[0];
+            if (blockedSet.has(dateStr)) return true;
+            if (availability.availableDateRanges.length === 0) return true;
+            const inRange = availability.availableDateRanges.some((range) =>
+              isWithinInterval(date, { start: parseISO(range.from), end: parseISO(range.to) })
+            );
+            if (!inRange) return true;
+          }
+          // When start is selected but no end, disable dates beyond the next gap
+          if (selectedRange?.from && !selectedRange?.to) {
+            const start = startOfDay(selectedRange.from);
+            if (isBefore(date, start)) return true;
+            const d = new Date(start);
+            while (d <= date) {
+              const ds = d.toISOString().split("T")[0];
+              const inRange = availability.availableDateRanges.some((range) =>
+                isWithinInterval(d, { start: parseISO(range.from), end: parseISO(range.to) })
+              );
+              if (!inRange || blockedSet.has(ds)) {
+                return date >= d;
+              }
+              d.setDate(d.getDate() + 1);
+            }
+          }
+          return false;
+        }}
         className="!font-sans"
         classNames={{
           months: "flex flex-col sm:flex-row gap-4",
@@ -76,7 +125,7 @@ export default function BookingCalendar({
             "!bg-amber-700 !text-white hover:!bg-amber-800 focus:!bg-amber-800",
           day_today: "bg-stone-200 font-semibold",
           day_outside: "text-stone-400 opacity-50",
-          day_disabled: "text-stone-300 opacity-50 cursor-not-allowed",
+          day_disabled: "text-stone-300 opacity-100 cursor-default pointer-events-none",
           day_range_middle:
             "!bg-amber-100 !text-amber-900",
           day_range_start: "!bg-amber-700 !text-white rounded-full",

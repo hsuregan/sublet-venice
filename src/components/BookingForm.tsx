@@ -3,18 +3,12 @@
 import { useState } from "react";
 import { format, eachDayOfInterval } from "date-fns";
 import { DateRange } from "react-day-picker";
-import PriceSummary from "./PriceSummary";
-
 interface BookingFormProps {
   selectedRange: DateRange;
-  dailyRate: number;
-  priceOverrides: { date: string; price: number }[];
 }
 
 export default function BookingForm({
   selectedRange,
-  dailyRate,
-  priceOverrides,
 }: BookingFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -81,12 +75,6 @@ export default function BookingForm({
 
   return (
     <div className="space-y-6">
-      <PriceSummary
-        selectedRange={selectedRange}
-        dailyRate={dailyRate}
-        priceOverrides={priceOverrides}
-      />
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <h3 className="text-lg font-semibold text-stone-800">
           Your Information

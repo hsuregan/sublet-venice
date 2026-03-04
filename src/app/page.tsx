@@ -250,7 +250,7 @@ export default function HomePage() {
         <h1
           ref={splashTitleRef}
           className="relative z-10 text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent transition-transform duration-700 ease-in-out"
-          style={{ fontFamily: "var(--font-blisey), serif", transform: splashTransform || undefined }}
+          style={{ fontFamily: "var(--font-title), serif", transform: splashTransform || undefined }}
         >
           Stay in Venice Beach
         </h1>
@@ -387,7 +387,7 @@ export default function HomePage() {
             WebkitMaskComposite: "destination-in",
           }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent" style={{ fontFamily: "var(--font-blisey), serif" }}>
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 drop-shadow-lg bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent" style={{ fontFamily: "var(--font-title), serif" }}>
             Stay in Venice Beach
           </h1>
           <p className="text-base md:text-lg text-stone-200 drop-shadow-md">
@@ -435,12 +435,16 @@ export default function HomePage() {
           >
             {/* Price ribbon */}
             <div
-              className={`absolute top-0 right-0 w-[120px] h-[120px] pointer-events-none z-10 transition-opacity duration-500 ${
-                hasRange ? "opacity-100" : "opacity-0"
+              className={`absolute top-0 right-0 w-[120px] h-[120px] z-10 transition-opacity duration-500 cursor-pointer ${
+                hasRange ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
               }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
+              }}
             >
               <div
-                className="absolute top-[18px] right-[-32px] w-[170px] text-center rotate-45 py-1.5 text-amber-900 text-xs font-semibold tracking-wide"
+                className="absolute top-[18px] right-[-32px] w-[170px] text-center rotate-45 py-1.5 text-amber-900 text-xs font-semibold tracking-wide hover:brightness-110 transition-all"
                 style={{
                   background: "linear-gradient(135deg, #f5d020, #f7e06e 40%, #e6b800 60%, #f7e06e)",
                   boxShadow: "0 2px 6px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5)",
@@ -510,7 +514,7 @@ export default function HomePage() {
                     if (isUnavail) {
                       return (
                         <span className="flex items-center justify-center w-full h-full">
-                          <span className="w-2 h-2 rounded-full bg-stone-300" />
+                          <span className="text-xl font-semibold" style={{ color: "#78716c" }}>&times;</span>
                         </span>
                       );
                     }
@@ -590,18 +594,20 @@ export default function HomePage() {
           </h2>
           <div className="text-stone-600 text-lg leading-relaxed space-y-4">
             <p>
-              I travel a lot and am away from my Venice apartment for long stretches
-              at a time. Rather than let it sit empty, I&apos;d love to sublet it to
-              someone who&apos;ll enjoy it as much as I do. This is my actual home
-              &mdash; my vinyl collection, music gear, and personal things are all
-              here &mdash; so I&apos;m ideally looking for friends, friends of friends,
-              or anyone who comes recommended by someone I trust.
+              I travel a lot and my Venice apartment sits empty for long
+              stretches at a time. Rather than let it go to waste, I&apos;d love
+              for someone to enjoy it while I&apos;m away. This is my actual
+              home &mdash; fully furnished with everything you need, from a
+              stocked kitchen to a private patio with an outdoor couch. There&apos;s
+              also a community BBQ area and apartment gym just steps away.
             </p>
             <p>
-              The apartment has a fully equipped kitchen, a comfortable bedroom,
-              a private patio with an outdoor couch, and plenty of houseplants
-              (all self-watering, so no maintenance needed). There&apos;s also a
-              community BBQ area and apartment gym just steps from the front door.
+              If we know each other, just call or text me and we&apos;ll work
+              it out. If you found this through a mutual connection, feel free
+              to reach out the same way. And if we haven&apos;t crossed paths
+              yet &mdash; you&apos;re just as welcome. Fill out the booking
+              request below, tell me a little about yourself, and let&apos;s
+              make it happen.
             </p>
           </div>
           <h3 className="text-xl font-bold text-stone-800 mt-8 mb-4 font-heading">
@@ -793,18 +799,11 @@ export default function HomePage() {
                   selectedRange={selectedRange}
                   onRangeChange={setSelectedRange}
                 />
-                {availability.dailyRate && (
-                  <p className="text-center text-stone-500 mt-3 text-sm">
-                    Starting from ${availability.dailyRate} / night
-                  </p>
-                )}
               </div>
               <div>
                 {selectedRange?.from && selectedRange?.to ? (
                   <BookingForm
                     selectedRange={selectedRange}
-                    dailyRate={availability.dailyRate}
-                    priceOverrides={availability.priceOverrides}
                   />
                 ) : (
                   <div className="bg-stone-100 rounded-lg p-8 text-center border border-stone-200">
@@ -891,9 +890,6 @@ export default function HomePage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-stone-800 text-stone-400 py-8 pb-20 text-center text-sm">
-        <p>Venice Short-Term Rental &middot; Direct Booking</p>
-      </footer>
 
       <PhotoDialog open={showAllPhotos} onClose={() => setShowAllPhotos(false)} />
       <PhotoDialog open={heroLightboxIndex !== null} onClose={() => setHeroLightboxIndex(null)} initialIndex={heroLightboxIndex} />
