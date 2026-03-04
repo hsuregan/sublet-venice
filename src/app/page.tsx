@@ -360,7 +360,7 @@ export default function HomePage() {
             Stay in Venice Beach
           </h1>
           <p className="text-base md:text-lg text-stone-200 drop-shadow-md">
-            1 bed, 1 bath &mdash; everything you need
+            Spacious 1 bed, 1 bath &middot; open living room &amp; kitchen &middot; private patio
           </p>
         </div>
         <div ref={calendarRef} className="relative">
@@ -657,7 +657,7 @@ export default function HomePage() {
         {/* Booking Section */}
         <section id="booking" ref={bookingSectionRef} className="mb-16">
           <h2 className="text-3xl font-bold text-stone-800 mb-6 font-heading">
-            Check Availability &amp; Book
+            Request to Book
           </h2>
 
           {loading ? (

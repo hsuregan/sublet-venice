@@ -19,7 +19,6 @@ export default function BookingForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [introduction, setIntroduction] = useState("");
   const [referral, setReferral] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -49,8 +48,7 @@ export default function BookingForm({
           guest_name: name,
           guest_email: email,
           guest_phone: phone,
-          introduction,
-          referral: referral || undefined,
+          referral,
         }),
       });
 
@@ -135,26 +133,15 @@ export default function BookingForm({
 
         <div>
           <label className="block text-sm font-medium text-stone-600 mb-1">
-            Tell us about yourself and your visit *
+            How are we connected? *
           </label>
           <textarea
-            value={introduction}
-            onChange={(e) => setIntroduction(e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-stone-800"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-stone-600 mb-1">
-            How did you find us? (optional)
-          </label>
-          <input
-            type="text"
             value={referral}
             onChange={(e) => setReferral(e.target.value)}
+            rows={3}
+            placeholder="e.g. friend of Sarah, coworker of Mike, etc."
             className="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 text-stone-800"
+            required
           />
         </div>
 
